@@ -1,3 +1,4 @@
+
 pragma solidity ^0.5.2;
 
 import {IERC20} from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
@@ -15,10 +16,13 @@ contract ContractWithFallback {
     uint256 depositId,
     address token,
     uint256 amountOrToken) public payable {
-    WithdrawManager(withdrawManager).startExitWithDepositedTokens.value(10**17)(depositId, token, amountOrToken);
+    require(msg.value >= 10**17, "Insufficient ether sent");
+    WithdrawManager(withdrawManager).startExitWithDepositedTokens(depositId, token, amountOrToken);
   }
 
-  function() external payable {}
+  function() external payable {
+    revert("Fallback function not allowed");
+  }
 }
 
 contract ContractWithoutFallback {
@@ -32,11 +36,12 @@ contract ContractWithoutFallback {
     uint256 depositId,
     address token,
     uint256 amountOrToken) public payable {
-    WithdrawManager(withdrawManager).startExitWithDepositedTokens.value(10**17)(depositId, token, amountOrToken);
+    require(msg.value >= 10**17, "Insufficient ether sent");
+    WithdrawManager(withdrawManager).startExitWithDepositedTokens(depositId, token, amountOrToken);
   }
 }
 
-contract ContractWitRevertingFallback {
+contract ContractWithRevertingFallback {
   function deposit(address depositManager, address token, uint256 amount) public {
     IERC20(token).approve(depositManager, amount);
     IDepositManager(depositManager).depositERC20(token, amount);
@@ -47,10 +52,11 @@ contract ContractWitRevertingFallback {
     uint256 depositId,
     address token,
     uint256 amountOrToken) public payable {
-    WithdrawManager(withdrawManager).startExitWithDepositedTokens.value(10**17)(depositId, token, amountOrToken);
+    require(msg.value >= 10**17, "Insufficient ether sent");
+    WithdrawManager(withdrawManager).startExitWithDepositedTokens(depositId, token, amountOrToken);
   }
 
   function() external payable {
-    revert("not implemented");
+    revert("Fallback function not implemented");
   }
 }
